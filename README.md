@@ -1,13 +1,15 @@
-# Sprint_DFSB_Front_End
+# SoftwareArchitecture_Front_End
 
 Browser frontend for managing customers, hydrogen generators, relationships,
 and shipping quotes through the DFSB backend API.
 
+For UI structure, state, API workflows, sequence diagrams, and responsive
+architecture, see [SPECIFIC_ARCHITECTURE.md](SPECIFIC_ARCHITECTURE.md).
 
 ## Backend Repository
 
 The backend for this project can be found at:
-https://github.com/Guiga1993/Sprint_DFSB_Back_End_API.git
+https://github.com/Guiga1993/SoftwareArchitecture_Back_End_API.git
 
 ## Current Architecture
 
@@ -56,7 +58,7 @@ media-query section.
 **Important:** Start the services in dependency order.
 
 1. Start `SoftwareArchitecture_API_External/app.py` on port `8001`.
-2. Start `Sprint_DFSB_Back_End_API/app.py` on port `5001`.
+2. Start `SoftwareArchitecture_Back_End_API/app.py` on port `5001`.
 3. Use VS Code Live Server to serve this directory on port `5500`.
 4. Open `http://127.0.0.1:5500` in a browser.
 
