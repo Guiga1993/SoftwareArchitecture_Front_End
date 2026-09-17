@@ -1,0 +1,4 @@
+# Static HTML and JavaScript contract test dependencies.
+beautifulsoup4==4.14.3
+esprima==4.0.1
+pytest==9.0.2

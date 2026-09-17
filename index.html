@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<!--
+    Hydrogen Generator Management frontend shell.
+    Keep control IDs synchronized with scripts.js and tests/test_html.py because
+    they form the DOM contract used by validation, table rendering, and editing.
+-->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="img/shipping.png">
+    <title>Hydrogen Generator Management</title>
+</head>
+
+<body>
+    <!-- Application Header -->
+    <header>
+        <div class="title">
+            <h1>Hydrogen Generator Management System</h1>
+        </div>
+        <div class="banner">
+            <img src="img/hydrogen_generator.jpg" alt="Hydrogen generation facility" class="banner-image">
+        </div>
+    </header>
+
+    <main>
+        <!-- Primary Tab Navigation -->
+        <nav class="tabs" role="tablist" aria-label="Management areas">
+            <button class="tab-button active" id="customer-tab" type="button" role="tab" aria-selected="true" aria-controls="customer-section" data-tab-target="customer-section">
+                Customer Management
+            </button>
+            <button class="tab-button" id="generator-tab" type="button" role="tab" aria-selected="false" aria-controls="generator-section" data-tab-target="generator-section" tabindex="-1">
+                Generator Management
+            </button>
+            <button class="tab-button" id="asset-tab" type="button" role="tab" aria-selected="false" aria-controls="customer-generators-section" data-tab-target="customer-generators-section" tabindex="-1">
+                Customer-Generator Relationships
+            </button>
+            <button class="tab-button" id="shipping-tab" type="button" role="tab" aria-selected="false" aria-controls="shipping-section" data-tab-target="shipping-section" tabindex="-1">
+                Shipping Quote Estimation
+            </button>
+        </nav>
+
+        <!-- Customer Management Panel -->
+        <section class="container tab-panel" id="customer-section" role="tabpanel" aria-labelledby="customer-tab">
+            <h2 class="section-title"><img src="img/customer.png" width="25px" class="icon" alt=""> Customer Registration</h2>
+
+            <!-- Customer Registration Form -->
+            <div class="newItem formTableContainer">
+                <form id="customerForm">
+                    <table class="formTable">
+                        <tr>
+                            <td><label for="custName" class="form-label">Name/Company:</label></td>
+                            <td><input type="text" id="custName" name="name" class="form-input" placeholder="e.g., AeroHidro Inc." minlength="2" maxlength="150" autocomplete="organization" required></td>
+                        </tr>
+                        <tr>
+                            <td><label for="custEmail" class="form-label">E-mail:</label></td>
+                            <td><input type="email" id="custEmail" name="email" class="form-input" placeholder="e.g., contact@example.com" maxlength="100" autocomplete="email" required></td>
+                        </tr>
+                        <tr>
+                            <td><label for="custTaxId" class="form-label">Tax ID:</label></td>
+                            <td><input type="text" id="custTaxId" name="tx_id" class="form-input" placeholder="000-00-0000" pattern="[0-9]{3}-[0-9]{2}-[0-9]{4}" minlength="11" maxlength="11" inputmode="numeric" title="Format: 000-00-0000" required></td>
+                        </tr>
+                        <tr>
+                            <td></td> <td><button type="submit" id="customerSubmitButton" class="addBtn btn-primary">Register Customer</button> <button type="reset" class="btn-secondary">Reset Fields</button> <button type="button" id="cancelCustomerEdit" class="btn-secondary" hidden>Cancel Edit</button></td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+
+            <!-- Customer Search and List Controls -->
+            <div class="formTableContainer">
+                <table class="formTable">
+                    <tr>
+                        <td><label for="searchCustomerId" class="form-label">Search Customer by ID:</label></td>
+                        <td><input type="number" min="1" step="1" id="searchCustomerId" name="customer_id" class="form-input" placeholder="e.g., 1"></td>
+                        <td><button type="button" onclick="searchCustomerRecord()" class="btn-primary">Search</button></td>
+                        <td><button type="button" onclick="getCustomers()" class="btn-secondary">List All</button></td>
+                        <td><button type="button" onclick="clearTableRows('customerTable')" class="btn-secondary">Clear Table</button></td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Customer Results -->
+            <div class="items">
+                <table id="customerTable" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Tax ID</th>
+                            <th class="action-column">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Hydrogen Generator Management Panel -->
+        <section class="container tab-panel" id="generator-section" role="tabpanel" aria-labelledby="generator-tab" hidden>
+            <h2 class="section-title"><img src="img/generator.png" width="25px" class="icon" alt="">Hydrogen Generator Registration</h2>
+
+            <!-- Generator Registration Form -->
+            <div class="newItem formTableContainer">
+                <form id="generatorForm">
+                    <table class="formTable">
+                        <tr>
+                            <td><label for="newSerial" class="form-label">Serial Number:</label></td>
+                            <td><input type="text" id="newSerial" name="serial_number" class="form-input" placeholder="e.g., GEN-0001" pattern="GEN-[0-9]{4}" maxlength="50" title="Format: GEN-0000 (e.g., GEN-0001)" required></td>
+                        </tr>
+                        <tr>
+                            <td><label for="newAcquisition" class="form-label">Acquisition Type:</label></td>
+                            <td>
+                                <select id="newAcquisition" name="acquisition_type" class="form-select" required>
+                                    <option value="" disabled selected>Select a type...</option>
+                                    <option value="Leasing">Leasing</option>
+                                    <option value="Renting">Renting</option>
+                                    <option value="Direct Sales">Direct Sales</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><label for="newGenType" class="form-label">Stack Type (e.g., PEMFC):</label></td>
+                                <td>
+                                    <select id="newGenType" name="stack_type" class="form-select" required>
+                                        <option value="" disabled selected>Select a type...</option>
+                                        <option value="PEMFC">PEMFC</option>
+                                        <option value="Alcaline">Alkaline</option>
+                                        <option value="SOFC">SOFC (Solid Oxide)</option>
+                                        <option value="AEMFC">AEMFC (Anion Exchange)</option>
+                                        <option value="Other/Personalized">Other/Customized</option>
+                                    </select>
+                                </td>
+                        </tr>
+                        <tr>
+                            <td><label for="newCells" class="form-label">Number of Cells:</label></td>
+                            <td><input type="number" min="1" max="5000" step="1" id="newCells" name="number_of_cells" class="form-input" placeholder="e.g., 10" required></td>
+                        </tr>
+                        <tr>
+                            <td><label for="newVoltage" class="form-label">Stack Voltage (V):</label></td>
+                            <td><input type="number" min="0.01" max="2000" step="0.01" id="newVoltage" name="stack_voltage" class="form-input" placeholder="e.g., 12.50" required></td>
+                        </tr>
+                        <tr>
+                            <td><label for="newCurrent" class="form-label">Current Density (A/cm2):</label></td>
+                            <td><input type="number" min="0.01" max="5000" step="0.01" id="newCurrent" name="current_density" class="form-input" placeholder="e.g., 0.5" required></td>
+                        </tr>
+                        <tr>
+                            <td><label for="newLength" class="form-label">Length (in):</label></td>
+                            <td><input type="number" min="0.01" max="108" step="0.01" id="newLength" name="length_in" class="form-input" placeholder="e.g., 24" required></td>
+                        </tr>
+                        <tr>
+                            <td><label for="newWidth" class="form-label">Width (in):</label></td>
+                            <td><input type="number" min="0.01" max="108" step="0.01" id="newWidth" name="width_in" class="form-input" placeholder="e.g., 16" required></td>
+                        </tr>
+                        <tr>
+                            <td><label for="newHeight" class="form-label">Height (in):</label></td>
+                            <td><input type="number" min="0.01" max="108" step="0.01" id="newHeight" name="height_in" class="form-input" placeholder="e.g., 12" required></td>
+                        </tr>
+                        <tr>
+                            <td><label for="newWeight" class="form-label">Weight (lb):</label></td>
+                            <td><input type="number" min="0.01" max="150" step="0.01" id="newWeight" name="weight_lb" class="form-input" placeholder="e.g., 50" required></td>
+                        </tr>
+                        <tr>
+                            <td></td> <td><button type="submit" id="generatorSubmitButton" class="addBtn btn-primary">Register Generator</button> <button type="reset" class="btn-secondary">Reset Fields</button> <button type="button" id="cancelGeneratorEdit" class="btn-secondary" hidden>Cancel Edit</button></td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+
+            <!-- Generator Search and List Controls -->
+            <div class="formTableContainer">
+                <table class="formTable">
+                    <tr>
+                        <td><label for="searchGeneratorSerial" class="form-label">Search Generator by Serial Number:</label></td>
+                        <td><input type="text" id="searchGeneratorSerial" name="serial_number" class="form-input" placeholder="e.g., GEN-0001"></td>
+                        <td><button type="button" onclick="searchGeneratorRecord()" class="btn-primary">Search</button></td>
+                        <td><button type="button" onclick="getGenerators()" class="btn-secondary">List All</button></td>
+                        <td><button type="button" onclick="clearTableRows('generatorTable')" class="btn-secondary">Clear Table</button></td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Generator Results -->
+            <div class="items">
+                <table id="generatorTable" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Generator ID</th>
+                            <th>Serial Number</th>
+                            <th>Acquisition</th>
+                            <th>Type</th>
+                            <th>Cells</th>
+                            <th>Total Voltage</th>
+                            <th>Current Density</th>
+                            <th>Voltage/Cell</th>
+                            <th>Length (in)</th>
+                            <th>Width (in)</th>
+                            <th>Height (in)</th>
+                            <th>Weight (lb)</th>
+                            <th class="action-column">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Customer-Generator Relationship Panel -->
+        <section class="container tab-panel" id="customer-generators-section" role="tabpanel" aria-labelledby="asset-tab" hidden>
+            <h2 class="section-title"><img src="img/relationship.png" width="25px" class="icon" alt="">Customer-Generator Relationships</h2>
+
+            <!-- Relationship Registration Form -->
+            <div class="newItem formTableContainer">
+                <form id="customerGeneratorForm">
+                    <table class="formTable">
+                        <tr>
+                            <td><label for="cgCustomerId" class="form-label">Customer ID:</label></td>
+                            <td><input type="number" min="1" step="1" id="cgCustomerId" name="customer_id" class="form-input" placeholder="e.g., 1" required></td>
+                        </tr>
+                        <tr>
+                            <td><label for="cgGeneratorId" class="form-label">Generator ID:</label></td>
+                            <td><input type="number" min="1" step="1" id="cgGeneratorId" name="generator_id" class="form-input" placeholder="e.g., 1" required></td>
+                        </tr>
+                        <tr>
+                            <td><label for="cgGeneratorQtd" class="form-label">Generator Quantity:</label></td>
+                            <td><input type="number" min="1" max="10000" step="1" id="cgGeneratorQtd" name="generator_qtd" class="form-input" placeholder="e.g., 1" value="1" required></td>
+                        </tr>
+                        <tr>
+                            <td><label for="cgInstallationDate" class="form-label">Installation Date:</label></td>
+                            <td><input type="date" id="cgInstallationDate" name="installation_date" class="form-input"></td>
+                        </tr>
+                        <tr>
+                            <td></td> <td><button type="submit" id="assetSubmitButton" class="addBtn btn-primary">Create Relationship</button> <button type="reset" class="btn-secondary">Reset Fields</button> <button type="button" id="cancelAssetEdit" class="btn-secondary" hidden>Cancel Edit</button></td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+
+            <!-- Relationship Search and List Controls -->
+            <div class="formTableContainer">
+                <table class="formTable">
+                    <tr>
+                        <td><label for="searchAssetId" class="form-label">Search Relationship by ID:</label></td>
+                        <td><input type="number" min="1" step="1" id="searchAssetId" name="asset_id" class="form-input" placeholder="e.g., 1"></td>
+                        <td><button type="button" onclick="searchAssetRecord()" class="btn-primary">Search</button></td>
+                        <td><button type="button" onclick="getAssets()" class="btn-secondary">List All</button></td>
+                        <td><button type="button" onclick="clearTableRows('customerGeneratorTable')" class="btn-secondary">Clear Table</button></td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Relationship Results -->
+            <div class="items">
+                <table id="customerGeneratorTable" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Relationship ID</th>
+                            <th>Customer ID</th>
+                            <th>Generator ID</th>
+                            <th>Generator Quantity</th>
+                            <th>Installation Date</th>
+                            <th class="action-column">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Shipping Quote Estimation Panel -->
+        <section class="container tab-panel" id="shipping-section" role="tabpanel" aria-labelledby="shipping-tab" hidden>
+            <h2 class="section-title"><img src="img/shipping.png" width="25px" class="icon" alt="">Shipping Quote Estimation</h2>
+
+            <!-- Shipment Details Form -->
+            <div class="newItem formTableContainer">
+                <form id="shippingQuoteForm">
+                    <table class="formTable">
+                        <tr>
+                            <td><label for="originName" class="form-label">Origin Name:</label></td>
+                            <td><input type="text" id="originName" name="origin_name" class="form-input" placeholder="Origin company name" minlength="2" maxlength="150" autocomplete="organization" required></td>
+                        </tr>
+                        <tr>
+                            <td><label for="originStreet" class="form-label">Origin Street:</label></td>
+                            <td><input type="text" id="originStreet" name="origin_street" class="form-input" placeholder="123 Main Street" minlength="3" maxlength="150" autocomplete="street-address" required></td>
+                        </tr>
+                        <tr>
+                            <td><label for="originCity" class="form-label">Origin City:</label></td>
+                            <td><input type="text" id="originCity" name="origin_city" class="form-input" placeholder="Los Angeles" minlength="2" maxlength="100" autocomplete="address-level2" required></td>
+                        </tr>
+                        <tr>
+                            <td><label for="originState" class="form-label">Origin State:</label></td>
+                            <td><input type="text" id="originState" name="origin_state" class="form-input" placeholder="CA" pattern="[A-Za-z]{2}" maxlength="2" autocomplete="address-level1" required></td>
+                        </tr>
+                        <tr>
+                            <td><label for="originZip" class="form-label">Origin ZIP:</label></td>
+                            <td><input type="text" id="originZip" name="origin_zip" class="form-input" placeholder="90001" pattern="[0-9]{5}(-[0-9]{4})?" autocomplete="postal-code" required></td>
+                        </tr>
+                        <tr>
+                            <td><label for="shipCustomerName" class="form-label">Recipient Name:</label></td>
+                            <td><input type="text" id="shipCustomerName" name="customer_name" class="form-input" placeholder="Recipient or company name" minlength="2" maxlength="150" required></td>
+                        </tr>
+                        <tr>
+                            <td><label for="destinationStreet" class="form-label">Destination Street:</label></td>
+                            <td><input type="text" id="destinationStreet" name="destination_street" class="form-input" placeholder="1 CNN Center" minlength="3" maxlength="150" required></td>
+                        </tr>
+                        <tr>
+                            <td><label for="destinationCity" class="form-label">Destination City:</label></td>
+                            <td><input type="text" id="destinationCity" name="destination_city" class="form-input" placeholder="Atlanta" minlength="2" maxlength="100" required></td>
+                        </tr>
+                        <tr>
+                            <td><label for="destinationState" class="form-label">Destination State:</label></td>
+                            <td><input type="text" id="destinationState" name="destination_state" class="form-input" placeholder="GA" pattern="[A-Za-z]{2}" maxlength="2" required></td>
+                        </tr>
+                        <tr>
+                            <td><label for="destinationZip" class="form-label">Destination ZIP:</label></td>
+                            <td><input type="text" id="destinationZip" name="destination_zip" class="form-input" placeholder="30303" pattern="[0-9]{5}(-[0-9]{4})?" required></td>
+                        </tr>
+                        <tr>
+                            <td><label for="shippingGeneratorId" class="form-label">Generator:</label></td>
+                            <td>
+                                <select id="shippingGeneratorId" name="generator_id" class="form-select" required>
+                                    <option value="" disabled selected>Select a generator...</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><label for="shippingQuantity" class="form-label">Generator Quantity:</label></td>
+                            <td><input type="number" id="shippingQuantity" name="generator_quantity" class="form-input" min="1" max="100" step="1" value="1" required></td>
+                        </tr>
+                        <tr>
+                            <td><label for="shippingUnitDimensions" class="form-label">Unit Dimensions:</label></td>
+                            <td><input type="text" id="shippingUnitDimensions" name="unit_dimensions" class="form-input" placeholder="Select a generator" readonly></td>
+                        </tr>
+                        <tr>
+                            <td><label for="shippingUnitWeight" class="form-label">Unit Weight:</label></td>
+                            <td><input type="text" id="shippingUnitWeight" name="unit_weight" class="form-input" placeholder="Select a generator" readonly></td>
+                        </tr>
+                        <tr>
+                            <td><label for="shippingCombinedShipment" class="form-label">Combined Shipment:</label></td>
+                            <td><input type="text" id="shippingCombinedShipment" name="combined_shipment" class="form-input" placeholder="Select a generator" readonly></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>
+                                <button type="submit" id="calculateShippingButton" class="btn-primary">Calculate Shipping Cost</button>
+                                <button type="reset" class="btn-secondary">Reset Fields</button>
+                            </td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+
+            <!-- Shipping Quote Result -->
+            <div id="shippingResult" class="shipping-result" style="display:none;" aria-live="polite"></div>
+        </section>
+    </main>
+
+    <!-- Application Behavior -->
+    <script src="scripts.js"></script>
+
+</body>
+</html>
