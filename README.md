@@ -40,8 +40,8 @@ Server runs on port `5500`, `scripts.js` instead targets the local backend at
 
 The stack definition is maintained in
 [the external API repository](../SoftwareArchitecture_API_External/docker-compose.yml).
-See [the containerization guide](../CONTAINERIZATION.md) for setup, health
-checks, port overrides, and data-lifecycle commands.
+See [the containerization guide](../SoftwareArchitecture_API_External/CONTAINERIZATION.md)
+for setup, health checks, port overrides, and data-lifecycle commands.
 
 ## Project Structure
 
