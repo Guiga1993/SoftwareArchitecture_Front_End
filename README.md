@@ -30,6 +30,20 @@ flowchart LR
 The browser communicates only with the backend. It never receives Shippo
 credentials and never calls the integration API directly.
 
+## Shippo Service Dependencies
+
+The frontend does not call Shippo, its dashboard, its platform API, or any
+carrier API. Its only network dependency is the backend. For shipping, the
+backend delegates to the external integration service, which calls Shippo's
+REST API; Shippo may then call carrier systems to obtain rates.
+
+The four entries on Shippo's status page are monitoring categories. This
+application uses the Shippo REST API indirectly, depends indirectly on Carrier
+APIs for quote availability, and does not use the Shippo Web Dashboard or
+Shippo Platform API. A Shippo or carrier incident can affect shipping results
+while the frontend still loads and CRUD may remain available. See
+[Shippo's status page](https://status.goshippo.com/) for current health.
+
 ## Container Deployment
 
 In the Compose deployment, nginx serves this application on host port `8080`

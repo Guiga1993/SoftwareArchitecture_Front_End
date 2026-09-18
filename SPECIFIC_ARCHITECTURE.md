@@ -51,6 +51,20 @@ network traffic still terminates at the backend. This boundary prevents Shippo
 secrets, private service names, and provider-specific payloads from entering
 browser requests.
 
+### Shippo dependency interpretation
+
+Shippo's status page lists `Shippo REST API`, `Shippo Web Dashboard`,
+`Carrier API`, and `Shippo Platform API` as monitored operational domains. The
+browser uses none of them directly. It calls the backend, which delegates
+shipping to the integration API; that service calls Shippo's REST API, and
+Shippo may call carrier APIs to produce rates.
+
+The Web Dashboard and Platform API are outside this frontend's architecture.
+REST API or carrier incidents may appear as unavailable shipping quotes, but
+they do not prevent the static UI from rendering and need not affect local CRUD
+operations. Current external-provider state is available from
+[Shippo's status page](https://status.goshippo.com/).
+
 ## 3. Static Application Structure
 
 ```mermaid
