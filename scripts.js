@@ -18,7 +18,13 @@
 // Configuration and Shared State
 // =============================================================================
 
-const API_BASE = 'http://127.0.0.1:5001';
+/** Build an API URL for local Live Server or the containerized nginx proxy. */
+const apiUrl = path => {
+  const baseUrl = window.location.port === '5500'
+    ? 'http://127.0.0.1:5001'
+    : '/api';
+  return `${baseUrl}${path}`;
+};
 const MAX_PARCEL_SIDE_IN = 108;
 const MAX_PARCEL_LENGTH_PLUS_GIRTH_IN = 165;
 const MAX_PARCEL_WEIGHT_LB = 150;
@@ -354,7 +360,7 @@ const getCustomers = async () => {
   // Clear the customer table before loading new data
   document.getElementById('customerTable').getElementsByTagName('tbody')[0].innerHTML = '';
   // Fetch the list of customers from the API
-  return fetch(`${API_BASE}/customers`)
+  return fetch(apiUrl('/customers'))
     .then((response) => response.json()) // Parse the response as JSON
     .then((data) => {
       // For each customer, insert a row into the table
@@ -374,7 +380,7 @@ const getGenerators = async () => {
   // Clear the generator table before loading new data
   clearTableRows('generatorTable');
   // Fetch the list of generators from the API
-  return fetch(`${API_BASE}/hydrogen-generators`)
+  return fetch(apiUrl('/hydrogen-generators'))
     .then((response) => response.json()) // Parse the response as JSON
     .then((data) => {
       availableGenerators = data.generators;
@@ -409,7 +415,7 @@ const getAssets = async () => {
   // Clear the asset-link table before loading new data
   clearTableRows('customerGeneratorTable');
   // Fetch the list of asset links from the API
-  return fetch(`${API_BASE}/assets`)
+  return fetch(apiUrl('/assets'))
     .then((response) => response.json()) // Parse the response as JSON
     .then((data) => {
       // For each asset, insert a row into the table
@@ -433,7 +439,7 @@ const getAssets = async () => {
 /** Fetch one customer by primary key, returning null for missing or failed reads. */
 const getCustomerById = async (customerId) => {
   // Send a GET request to fetch a customer by ID
-  return fetch(`${API_BASE}/customer?customer_id=${customerId}`)
+  return fetch(apiUrl(`/customer?customer_id=${customerId}`))
     .then(async (response) => {
       // If the response is not OK, return null
       if (!response.ok) return null;
@@ -451,7 +457,7 @@ const getCustomerById = async (customerId) => {
 /** Fetch one generator by URL-encoded serial, returning null when unavailable. */
 const getGeneratorBySerial = async (serialNumber) => {
   // Send a GET request to fetch a generator by serial number
-  return fetch(`${API_BASE}/hydrogen-generator?serial_number=${encodeURIComponent(serialNumber)}`)
+  return fetch(apiUrl(`/hydrogen-generator?serial_number=${encodeURIComponent(serialNumber)}`))
     .then(async (response) => {
       // If the response is not OK, return null
       if (!response.ok) return null;
@@ -469,7 +475,7 @@ const getGeneratorBySerial = async (serialNumber) => {
 /** Fetch one relationship by primary key, returning null when unavailable. */
 const getAssetById = async (assetId) => {
   // Send a GET request to fetch an asset by ID
-  return fetch(`${API_BASE}/asset?asset_id=${assetId}`)
+  return fetch(apiUrl(`/asset?asset_id=${assetId}`))
     .then(async (response) => {
       // If the response is not OK, return null
       if (!response.ok) return null;
@@ -497,7 +503,7 @@ const postCustomer = async (name, email, txId) => {
   formData.append('tx_id', txId);
 
   // Send a POST request to create a new customer
-  return fetch(`${API_BASE}/customer`, {
+  return fetch(apiUrl('/customer'), {
     method: 'post',
     body: formData
   })
@@ -545,7 +551,7 @@ const postGenerator = async (serial, acquisition, stackType, cells, voltage, cur
   formData.append('weight_lb', weight);
 
   // Send a POST request to create a new generator
-  return fetch(`${API_BASE}/hydrogen-generator`, {
+  return fetch(apiUrl('/hydrogen-generator'), {
     method: 'post',
     body: formData
   })
@@ -587,7 +593,7 @@ const postAsset = async (customerId, generatorId, generatorQtd, installationDate
   }
 
   // Send a POST request to create a new asset link
-  return fetch(`${API_BASE}/asset`, {
+  return fetch(apiUrl('/asset'), {
     method: 'post',
     body: formData
   })
@@ -636,7 +642,7 @@ const putCustomer = async (customerId, name, email, txId) => {
   formData.append('tx_id', txId);
 
   try {
-    const response = await fetch(`${API_BASE}/customer?customer_id=${customerId}`, {
+    const response = await fetch(apiUrl(`/customer?customer_id=${customerId}`), {
       method: 'put',
       body: formData
     });
@@ -667,7 +673,7 @@ const putGenerator = async (currentSerial, values) => {
 
   try {
     const response = await fetch(
-      `${API_BASE}/hydrogen-generator?serial_number=${encodeURIComponent(currentSerial)}`,
+      apiUrl(`/hydrogen-generator?serial_number=${encodeURIComponent(currentSerial)}`),
       { method: 'put', body: formData }
     );
     return parseUpdateResponse(response, 'Error updating the generator.');
@@ -687,7 +693,7 @@ const putAsset = async (assetId, customerId, generatorId, generatorQtd, installa
   if (installationDate) formData.append('installation_date', installationDate);
 
   try {
-    const response = await fetch(`${API_BASE}/asset?asset_id=${assetId}`, {
+    const response = await fetch(apiUrl(`/asset?asset_id=${assetId}`), {
       method: 'put',
       body: formData
     });
@@ -703,7 +709,7 @@ const putAsset = async (assetId, customerId, generatorId, generatorQtd, installa
 /** Delete a customer by ID and return normalized API errors to the row action. */
 const deleteCustomer = async (id) => {
   // Send a DELETE request to remove a customer by ID
-  return fetch(`${API_BASE}/customer?customer_id=${id}`, { method: 'delete' })
+  return fetch(apiUrl(`/customer?customer_id=${id}`), { method: 'delete' })
     .then(async (response) => {
       // Parse the response as JSON
       const data = await response.json();
@@ -725,7 +731,7 @@ const deleteCustomer = async (id) => {
 /** Delete a generator by its URL-encoded serial number. */
 const deleteGenerator = async (serialNumber) => {
   // Send a DELETE request to remove a generator by serial number
-  return fetch(`${API_BASE}/hydrogen-generator?serial_number=${encodeURIComponent(serialNumber)}`, {
+  return fetch(apiUrl(`/hydrogen-generator?serial_number=${encodeURIComponent(serialNumber)}`), {
     method: 'delete'
   })
     .then(async (response) => {
@@ -749,7 +755,7 @@ const deleteGenerator = async (serialNumber) => {
 /** Delete a customer-generator relationship by asset ID. */
 const deleteAsset = async (assetId) => {
   // Send a DELETE request to remove an asset by ID
-  return fetch(`${API_BASE}/asset?asset_id=${assetId}`, { method: 'delete' })
+  return fetch(apiUrl(`/asset?asset_id=${assetId}`), { method: 'delete' })
     .then(async (response) => {
       // Parse the response as JSON
       const data = await response.json();
@@ -1535,7 +1541,7 @@ const calculateShippingQuote = async () => {
     try {
 
         const response = await fetch(
-            `${API_BASE}/shipping-quote`,
+          apiUrl('/shipping-quote'),
             {
                 method: "POST",
 

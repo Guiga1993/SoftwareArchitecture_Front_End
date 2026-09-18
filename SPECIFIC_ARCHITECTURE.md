@@ -43,9 +43,13 @@ flowchart LR
     Integration --> Shippo
 ```
 
-`API_BASE` in `scripts.js` is `http://127.0.0.1:5001`. All browser network
-traffic terminates at the backend. This boundary prevents Shippo secrets and
-provider-specific payloads from entering browser code.
+The `apiUrl` resolver in `scripts.js` selects the transport boundary from the
+page port. Port `5500` targets the local backend at
+`http://127.0.0.1:5001`; every other port uses `/api`, which the containerized
+nginx server strips before proxying to `http://backend:5001/`. All browser
+network traffic still terminates at the backend. This boundary prevents Shippo
+secrets, private service names, and provider-specific payloads from entering
+browser requests.
 
 ## 3. Static Application Structure
 

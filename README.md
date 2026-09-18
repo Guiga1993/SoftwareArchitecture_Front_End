@@ -30,6 +30,19 @@ flowchart LR
 The browser communicates only with the backend. It never receives Shippo
 credentials and never calls the integration API directly.
 
+## Container Deployment
+
+In the Compose deployment, nginx serves this application on host port `8080`
+by default. Browser requests use `/api`; nginx strips that prefix and proxies
+to `http://backend:5001/` on the private Compose network. When VS Code Live
+Server runs on port `5500`, `scripts.js` instead targets the local backend at
+`http://127.0.0.1:5001`.
+
+The stack definition is maintained in
+[the external API repository](../SoftwareArchitecture_API_External/docker-compose.yml).
+See [the containerization guide](../CONTAINERIZATION.md) for setup, health
+checks, port overrides, and data-lifecycle commands.
+
 ## Project Structure
 
 - `index.html` - Semantic document structure and form controls
@@ -59,8 +72,20 @@ media-query section.
 
 1. Start `SoftwareArchitecture_API_External/app.py` on port `8001`.
 2. Start `SoftwareArchitecture_Back_End_API/app.py` on port `5001`.
-3. Use VS Code Live Server to serve this directory on port `5500`.
+3. Serve this directory on port `5500` using one of these options:
+
+	- VS Code Live Server
+	- Python's built-in static server:
+
+	```powershell
+	python -m http.server 5500
+	```
+
 4. Open `http://127.0.0.1:5500` in a browser.
+
+Port `5500` is required for local development because `scripts.js` uses it to
+route browser API requests directly to the backend at `http://127.0.0.1:5001`.
+Other ports use the container-only nginx `/api` proxy.
 
 ## Features
 
@@ -79,7 +104,8 @@ media-query section.
 - Create and edit operations update the relevant table automatically.
 - The pencil action loads a record into its existing form; **Cancel Edit** returns the form to create mode.
 - Each section also has a **Clear Table** button, which clears the table in the HTML only (no data is deleted from the database).
-- Shipping requests go only to the backend at `http://127.0.0.1:5001`.
+- Shipping requests go only to the backend, either directly at
+	`http://127.0.0.1:5001` for Live Server or through nginx at `/api`.
 - Generator dimensions and weight are displayed read-only and are not submitted;
 	the backend loads trusted measurements from SQLite.
 - Verify shipping manually by completing both addresses, choosing a generator

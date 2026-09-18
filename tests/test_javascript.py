@@ -149,7 +149,9 @@ def test_sections_follow_the_documented_order(source):
 
 
 def test_configuration_constants_match_frontend_contract(source):
-    assert "const API_BASE = 'http://127.0.0.1:5001';" in source
+    assert "window.location.port === '5500'" in source
+    assert "? 'http://127.0.0.1:5001'" in source
+    assert ": '/api';" in source
     assert "const MAX_PARCEL_SIDE_IN = 108;" in source
     assert "const MAX_PARCEL_LENGTH_PLUS_GIRTH_IN = 165;" in source
     assert "const MAX_PARCEL_WEIGHT_LB = 150;" in source
@@ -176,9 +178,16 @@ def test_inline_html_handlers_have_javascript_declarations(document, syntax_tree
 
 
 def test_expected_api_routes_are_referenced(source):
-    referenced_paths = set(re.findall(r"\$\{API_BASE\}(/[-a-z]+)", source))
+    referenced_paths = set(re.findall(r"apiUrl\(\s*[`'\"](/[-a-z]+)", source))
 
     assert referenced_paths == EXPECTED_API_PATHS
+
+
+def test_runtime_javascript_does_not_expose_internal_services(source):
+    assert "backend:5001" not in source
+    assert "shippo-integration" not in source
+    assert "api.goshippo.com" not in source
+    assert "127.0.0.1:8001" not in source
 
 
 def test_form_submit_handlers_are_registered_once(source):
